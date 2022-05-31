@@ -1,0 +1,29 @@
+{
+  "scm-external-file-plugin": {
+    "openUrl": "Externe Datei in neuen Tab öffnen",
+    "modal": {
+      "title": "Externe Datei verknüpfen",
+      "cancel": "Abbrechen",
+      "submit": "Verknüpfung erstellen"
+    },
+    "create": {
+      "path": "Dateipfad",
+      "pathHelpText": "Pfad für die Erstellung der Verknüpfung",
+      "invalidPath": "Ungültiger Dateipfad",
+      "filename": "Dateiname",
+      "filenameHelpText": "Dateiname für die Erstellung der Verknüpfung",
+      "invalidFilename": "Ungültiger Dateiname",
+      "url": "Url der externen Datei",
+      "urlHelpText": "Zieladresse der externen Datei, z.B. https://github.com/scm-manager/scm-manager/blob/develop/CHANGELOG.md",
+      "invalidUrl": "Ungültige Url",
+      "commitPlaceholder": "Commit Nachricht eingeben...",
+      "tooltip": "Externe Datei verknüpfen"
+    }
+  },
+  "errors": {
+    "5KT7aOCOS1": {
+      "displayName": "Ziel Adresse nicht gefunden",
+      "description": "Diese URL Datei enthält keine gültige Ziel-Adresse.\nWeitere Informationen: https://fileinfo.com/extension/url"
+    }
+  }
+}

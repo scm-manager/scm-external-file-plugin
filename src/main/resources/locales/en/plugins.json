@@ -1,0 +1,29 @@
+{
+  "scm-external-file-plugin": {
+    "openUrl": "Open external file in new tab",
+    "modal": {
+      "title": "Create external file link",
+      "cancel": "Cancel",
+      "submit": "Create file link"
+    },
+    "create": {
+      "path": "Filepath",
+      "pathHelpText": "Filepath where the external file link should be created in your repository",
+      "invalidPath": "Invalid filepath",
+      "filename": "Filename",
+      "filenameHelpText": "Filename of the external file link which will be created",
+      "invalidFilename": "Invalid filename",
+      "url": "URL of the external file",
+      "urlHelpText": "URL to the target file, e. g. https://github.com/scm-manager/scm-manager/blob/develop/CHANGELOG.md",
+      "invalidUrl": "Invalid URL",
+      "commitPlaceholder": "Insert your commit message...",
+      "tooltip": "Create external file link"
+    }
+  },
+  "errors": {
+    "5KT7aOCOS1": {
+      "displayName": "Could not resolve target url",
+      "description": "This URL file does not contain a valid target address.\nMore information: https://fileinfo.com/extension/url"
+    }
+  }
+}
