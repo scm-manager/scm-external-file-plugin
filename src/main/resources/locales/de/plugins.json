@@ -1,6 +1,6 @@
 {
   "scm-external-file-plugin": {
-    "openUrl": "Externe Datei in neuen Tab öffnen",
+    "openUrl": "Externe Datei in neuem Tab öffnen",
     "modal": {
       "title": "Externe Datei verknüpfen",
       "cancel": "Abbrechen",
