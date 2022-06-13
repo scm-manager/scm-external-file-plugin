@@ -58,6 +58,10 @@ public class FileLinkEnricher implements HalEnricher {
         "externalFile",
         externalFileLinks.getExternalFile(namespaceAndName.getNamespace(), namespaceAndName.getName(), browserResult.getFile().getPath()).asString()
       );
+      appender.appendLink(
+        "modifyExternalFile",
+        externalFileLinks.getExternalFile(namespaceAndName.getNamespace(), namespaceAndName.getName(), browserResult.getFile().getPath()).asString()
+      );
     }
   }
 

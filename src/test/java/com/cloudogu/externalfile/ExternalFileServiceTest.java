@@ -96,6 +96,24 @@ class ExternalFileServiceTest {
 
   @Test
   @SubjectAware(value = "trillian", permissions = "repository:modify:1")
+  void shouldModifyExternalFile() throws IOException {
+    ModifyExternalFileDto dto = new ModifyExternalFileDto("https://test.url/", null, "Modify existing link");
+
+    service.modify(repository, dto.getBranch(), "my-first-link", dto.getUrl(), dto.getCommitMessage());
+
+    verify(modifyCommandBuilder).modifyFile("my-first-link.URL");
+  }
+
+  @Test
+  @SubjectAware(value = "trillian")
+  void shouldNotAllowToModifyWithoutPermissions() {
+    ModifyExternalFileDto dto = new ModifyExternalFileDto("https://test.url/", null, "Modify existing link");
+
+    assertThrows(UnauthorizedException.class, () -> service.modify(repository, dto.getBranch(), "my-first-link", dto.getUrl(), dto.getCommitMessage()));
+  }
+
+  @Test
+  @SubjectAware(value = "trillian", permissions = "repository:modify:1")
   void shouldChangeSuffixWithLowerCaseLettersToUpperCase() throws IOException {
     CreateExternalFileDto dto = new CreateExternalFileDto("https://test.url/", "my-first-link.uRl", "", "Add new link");
 

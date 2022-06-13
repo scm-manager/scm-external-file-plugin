@@ -105,6 +105,7 @@ class FileLinkEnricherTest {
     enricher.enrich(context, appender);
 
     verify(appender).appendLink("externalFile", "/scm/v2/external-file/hitchhiker/HeartOfGold/nested%2Ffile%2Ftestfile.URL");
+    verify(appender).appendLink("modifyExternalFile", "/scm/v2/external-file/hitchhiker/HeartOfGold/nested%2Ffile%2Ftestfile.URL");
   }
 
   private void setUpHalContext(Repository repository, BrowserResult result) {

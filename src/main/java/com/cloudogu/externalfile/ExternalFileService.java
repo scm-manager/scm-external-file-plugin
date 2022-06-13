@@ -32,6 +32,7 @@ import sonia.scm.repository.api.ModifyCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class ExternalFileService {
   public void create(Repository repository, CreateExternalFileDto dto) throws IOException {
     RepositoryPermissions.modify(repository).check();
     try (RepositoryService service = serviceFactory.create(repository)) {
-      String filePath = resolveFilePath(dto);
+      String filePath = resolveFilePath(dto.getPath());
       ModifyCommandBuilder modifyCommandBuilder = service.getModifyCommand()
         .createFile(filePath)
         .withData(new ByteArrayInputStream((String.format(FILE_TEMPLATE, dto.getUrl())).getBytes(UTF_8)))
@@ -62,6 +63,20 @@ public class ExternalFileService {
         modifyCommandBuilder.setBranch(dto.getBranch());
       }
         modifyCommandBuilder.execute();
+    }
+  }
+
+  public void modify(Repository repository, @Nullable String branch, String path, String url, String commitMessage) throws IOException {
+    RepositoryPermissions.modify(repository).check();
+    try (RepositoryService service = serviceFactory.create(repository)) {
+      ModifyCommandBuilder modifyCommandBuilder = service.getModifyCommand()
+        .modifyFile(resolveFilePath(path))
+        .withData(new ByteArrayInputStream((String.format(FILE_TEMPLATE, url)).getBytes(UTF_8)))
+        .setCommitMessage(commitMessage);
+      if (!Strings.isNullOrEmpty(branch)) {
+        modifyCommandBuilder.setBranch(branch);
+      }
+      modifyCommandBuilder.execute();
     }
   }
 
@@ -77,10 +92,10 @@ public class ExternalFileService {
     }
   }
 
-  private String resolveFilePath(CreateExternalFileDto dto) {
+  private String resolveFilePath(String path) {
     String filePath = "";
-    if (!Strings.isNullOrEmpty(dto.getPath())) {
-      filePath = dto.getPath();
+    if (!Strings.isNullOrEmpty(path)) {
+      filePath = path;
     }
     if (!filePath.endsWith(".URL")) {
       if (filePath.toLowerCase(Locale.ROOT).endsWith(".url")) {
