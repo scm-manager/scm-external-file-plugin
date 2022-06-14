@@ -24,30 +24,28 @@
 
 package com.cloudogu.externalfile;
 
+import com.cloudogu.scm.editor.ChangeGuardCheck;
+import com.cloudogu.scm.editor.EditorPreconditions;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricherContext;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
-import sonia.scm.repository.BrowserResult;
-import sonia.scm.repository.FileObject;
-import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryTestData;
+import sonia.scm.repository.*;
 
 import javax.inject.Provider;
-
 import java.net.URI;
+import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FileLinkEnricherTest {
@@ -61,6 +59,12 @@ class FileLinkEnricherTest {
   @Mock
   private HalAppender appender;
 
+  @Mock
+  private ChangeGuardCheck changeGuardCheck;
+
+  @Mock
+  private EditorPreconditions editorPreconditions;
+
   @InjectMocks
   private FileLinkEnricher enricher;
 
@@ -70,7 +74,7 @@ class FileLinkEnricherTest {
     fileObject.setDirectory(true);
     fileObject.setName("testfile.URL");
     BrowserResult result = createBrowserResult("42", "master", fileObject);
-    setUpHalContext(repository, result);
+    setUpHalContext(repository, result, fileObject);
 
     enricher.enrich(context, appender);
 
@@ -83,7 +87,7 @@ class FileLinkEnricherTest {
     fileObject.setDirectory(false);
     fileObject.setPath("testfile.LUR");
     BrowserResult result = createBrowserResult("42", "master", fileObject);
-    setUpHalContext(repository, result);
+    setUpHalContext(repository, result, fileObject);
 
     enricher.enrich(context, appender);
 
@@ -92,25 +96,30 @@ class FileLinkEnricherTest {
 
   @Test
   void shouldEnrichLink() {
-    ScmPathInfoStore scmPathInfoStore = mock(ScmPathInfoStore.class);
-    when(scmPathInfoStoreProvider.get()).thenReturn(scmPathInfoStore);
-    when(scmPathInfoStore.get()).thenReturn(() -> URI.create("/scm"));
-
     FileObject fileObject = new FileObject();
     fileObject.setDirectory(false);
     fileObject.setPath("nested/file/testfile.URL");
     BrowserResult result = createBrowserResult("42", "master", fileObject);
-    setUpHalContext(repository, result);
+    setUpHalContext(repository, result, fileObject);
+
+    ScmPathInfoStore scmPathInfoStore = mock(ScmPathInfoStore.class);
+    when(scmPathInfoStoreProvider.get()).thenReturn(scmPathInfoStore);
+    when(scmPathInfoStore.get()).thenReturn(() -> URI.create("/scm"));
+    when(changeGuardCheck.isModifiable(any(), any(), any())).thenReturn(emptyList());
+    when(editorPreconditions.isEditable(any(), any())).thenReturn(true);
 
     enricher.enrich(context, appender);
 
-    verify(appender).appendLink("externalFile", "/scm/v2/external-file/hitchhiker/HeartOfGold/nested%2Ffile%2Ftestfile.URL");
-    verify(appender).appendLink("modifyExternalFile", "/scm/v2/external-file/hitchhiker/HeartOfGold/nested%2Ffile%2Ftestfile.URL");
+    ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+    verify(appender, times(2)).appendLink(argument.capture(), eq("/scm/v2/external-file/hitchhiker/HeartOfGold/nested%2Ffile%2Ftestfile.URL"));
+    List<String> argumentValues = argument.getAllValues();
+    Assertions.assertThat(argumentValues).contains("externalFile", "modifyExternalFile");
   }
 
-  private void setUpHalContext(Repository repository, BrowserResult result) {
+  private void setUpHalContext(Repository repository, BrowserResult result, FileObject fileObject) {
     doReturn(repository.getNamespaceAndName()).when(context).oneRequireByType(NamespaceAndName.class);
     doReturn(result).when(context).oneRequireByType(BrowserResult.class);
+    doReturn(fileObject).when(context).oneRequireByType(FileObject.class);
   }
 
   private BrowserResult createBrowserResult(String revision, String branchName, FileObject fileObject) {

@@ -24,6 +24,8 @@
 
 package com.cloudogu.externalfile;
 
+import com.cloudogu.scm.editor.ChangeGuardCheck;
+import com.cloudogu.scm.editor.EditorPreconditions;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
@@ -42,26 +44,33 @@ import javax.inject.Provider;
 public class FileLinkEnricher implements HalEnricher {
 
   private final Provider<ScmPathInfoStore> scmPathInfoStore;
+  private final ChangeGuardCheck changeGuardCheck;
+
+  private final EditorPreconditions editorPreconditions;
 
   @Inject
-  public FileLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore) {
+  public FileLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, ChangeGuardCheck changeGuardCheck, EditorPreconditions editorPreconditions) {
     this.scmPathInfoStore = scmPathInfoStore;
+    this.changeGuardCheck = changeGuardCheck;
+    this.editorPreconditions = editorPreconditions;
   }
 
   @Override
   public void enrich(HalEnricherContext context, HalAppender appender) {
     NamespaceAndName namespaceAndName = context.oneRequireByType(NamespaceAndName.class);
     BrowserResult browserResult = context.oneRequireByType(BrowserResult.class);
+    FileObject fileObject = context.oneRequireByType(FileObject.class);
+
     if (shouldEnrichLink(browserResult)) {
       RestAPI.ExternalFileLinks externalFileLinks = new RestAPI(scmPathInfoStore.get().get().getApiRestUri()).externalFile();
-      appender.appendLink(
-        "externalFile",
-        externalFileLinks.getExternalFile(namespaceAndName.getNamespace(), namespaceAndName.getName(), browserResult.getFile().getPath()).asString()
-      );
-      appender.appendLink(
-        "modifyExternalFile",
-        externalFileLinks.getExternalFile(namespaceAndName.getNamespace(), namespaceAndName.getName(), browserResult.getFile().getPath()).asString()
-      );
+      String link = externalFileLinks.getExternalFile(namespaceAndName.getNamespace(), namespaceAndName.getName(), browserResult.getFile().getPath()).asString();
+      appender.appendLink("externalFile", link);
+      if (
+        editorPreconditions.isEditable(namespaceAndName, browserResult) &&
+          changeGuardCheck.isModifiable(namespaceAndName, browserResult.getRequestedRevision(), fileObject.getPath()).isEmpty()
+      ) {
+        appender.appendLink("modifyExternalFile", link);
+      }
     }
   }
 

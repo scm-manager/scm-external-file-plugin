@@ -18,6 +18,10 @@
       "invalidUrl": "Invalid URL",
       "commitPlaceholder": "Insert your commit message...",
       "tooltip": "Create external file link"
+    },
+    "edit": {
+      "title": "Edit external file link",
+      "submit": "Edit file link"
     }
   },
   "errors": {

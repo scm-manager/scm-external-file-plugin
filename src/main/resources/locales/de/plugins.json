@@ -18,6 +18,10 @@
       "invalidUrl": "Ungültige Url",
       "commitPlaceholder": "Commit Nachricht eingeben...",
       "tooltip": "Externe Datei verknüpfen"
+    },
+    "edit": {
+      "title": "Link zu externer Datei ändern",
+      "submit": "Link ändern"
     }
   },
   "errors": {

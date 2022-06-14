@@ -23,7 +23,7 @@
  */
 
 import { File, Repository } from "@scm-manager/ui-types";
-import React, { FC, useRef, useState } from "react";
+import React, { FC, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Button,
@@ -35,32 +35,60 @@ import {
   Textarea,
   validation
 } from "@scm-manager/ui-components";
-import { useCreateExternalFile } from "./useCreateExternalFile";
+import { useForm, useWatch } from "react-hook-form";
+
+export type ExternalFileForm = {
+  commitMessage: string;
+  url: string;
+  path: string;
+  filename: string;
+};
+
+export type FormSubmitValue = {
+  commitMessage: string;
+  url: string;
+  path: string;
+};
 
 type Props = {
   repository: Repository;
   revision?: string;
   close: () => void;
-  sources: File;
+  file?: File;
+  initialUrl?: string;
+  initialPath?: string;
+  initialFilename?: string;
+  onSubmit: (form: FormSubmitValue) => void;
+  isLoading?: boolean;
+  error?: Error | null;
+  title: string;
+  submitButtonLabel: string;
 };
 
-const CreateExternalFileModal: FC<Props> = ({ repository, close, revision, sources }) => {
-  const originalPath = sources.path === "/" ? "/" : "/" + sources.path;
+const ExternalFileModal: FC<Props> = ({
+  close,
+  initialFilename,
+  isLoading,
+  error,
+  initialUrl,
+  onSubmit,
+  initialPath,
+  title,
+  submitButtonLabel
+}) => {
+  const originalPath = initialPath === "/" ? "/" : "/" + initialPath;
   const [t] = useTranslation("plugins");
-  const [path, setPath] = useState(originalPath);
-  const [filename, setFilename] = useState("");
-  const [url, setUrl] = useState("");
-  const [pathValid, setPathValid] = useState(true);
-  const [urlValid, setUrlValid] = useState(true);
-  const [filenameValid, setFilenameValid] = useState(true);
-  const [commitMessage, setCommitMessage] = useState("");
-  const initialFocusRef = useRef<HTMLInputElement>(null);
-  const { create, isLoading, error } = useCreateExternalFile(repository, sources);
+  const { register, formState, getValues, control } = useForm<ExternalFileForm>({
+    defaultValues: { path: originalPath, filename: initialFilename, commitMessage: "", url: initialUrl },
+    mode: "onBlur"
+  });
+  const [commitMessage, filename, url] = useWatch({ control, name: ["commitMessage", "filename", "url"] });
+  const isPathAndFilenameDisabled = useMemo(() => isLoading || !!initialUrl, [isLoading, initialUrl]);
+  const submitDisabled = useMemo(() => !commitMessage || !filename || !url, [commitMessage, filename, url]);
 
-  const commitDisabled = !commitMessage || !filename || !url;
-
-  const submit = () => {
-    if (commitDisabled) {
+  const submit = useCallback(() => {
+    const { commitMessage, path, url, filename } = getValues();
+    if (submitDisabled) {
       return;
     }
 
@@ -69,69 +97,57 @@ const CreateExternalFileModal: FC<Props> = ({ repository, close, revision, sourc
       resultingPath = resultingPath + "/";
     }
     resultingPath = resultingPath + filename;
-    create({
+    onSubmit({
       commitMessage,
       url,
-      branch: revision || "",
       path: resultingPath
     });
-  };
+  }, [getValues, submitDisabled, onSubmit]);
 
   const body = (
     <>
       {error ? <ErrorNotification error={error} /> : null}
       <InputField
         label={t("scm-external-file-plugin.create.path")}
-        value={path}
-        onChange={event => {
-          setPathValid(validation.isPathValid(event.target.value));
-          setPath(event.target.value);
-        }}
-        disabled={isLoading}
-        validationError={!pathValid}
+        readOnly={isPathAndFilenameDisabled}
+        validationError={!!formState.errors.path}
         errorMessage={t("scm-external-file-plugin.create.invalidPath")}
         helpText={t("scm-external-file-plugin.create.pathHelpText")}
         onReturnPressed={submit}
-        ref={initialFocusRef}
         className="mb-4"
+        {...register("path", {
+          validate: validation.isPathValid
+        })}
       />
       <InputField
         label={t("scm-external-file-plugin.create.filename")}
-        value={filename}
-        onChange={value => {
-          setFilenameValid(validation.isFilenameValid(value));
-          setFilename(value);
-        }}
-        validationError={!filenameValid}
+        validationError={!!formState.errors.filename}
         errorMessage={t("scm-external-file-plugin.create.invalidFilename")}
         helpText={t("scm-external-file-plugin.create.filenameHelpText")}
-        disabled={isLoading}
+        readOnly={isPathAndFilenameDisabled}
         onReturnPressed={submit}
+        {...register("filename", { validate: validation.isFilenameValid })}
       />
       <hr />
       <InputField
         label={t("scm-external-file-plugin.create.url")}
         value={url}
-        onChange={value => {
-          console.log("url validation", validation.isUrlValid(value));
-          setUrlValid(validation.isUrlValid(value));
-          setUrl(value);
-        }}
-        validationError={!urlValid}
+        validationError={!!formState.errors.url}
         errorMessage={t("scm-external-file-plugin.create.invalidUrl")}
         helpText={t("scm-external-file-plugin.create.urlHelpText")}
         disabled={isLoading}
         onReturnPressed={submit}
+        {...register("url", { validate: validation.isUrlValid })}
       />
       <div className="mb-2 mt-5">
         <CommitAuthor />
       </div>
       <Textarea
         placeholder={t("scm-external-file-plugin.create.commitPlaceholder")}
-        onChange={message => setCommitMessage(message)}
         value={commitMessage}
         disabled={isLoading}
         onSubmit={submit}
+        {...register("commitMessage")}
       />
     </>
   );
@@ -141,22 +157,13 @@ const CreateExternalFileModal: FC<Props> = ({ repository, close, revision, sourc
       <Button action={close} disabled={isLoading}>
         {t("scm-external-file-plugin.modal.cancel")}
       </Button>
-      <Button action={submit} disabled={commitDisabled} loading={isLoading} color="primary">
-        {t("scm-external-file-plugin.modal.submit")}
+      <Button action={submit} disabled={submitDisabled} loading={isLoading} color="primary">
+        {submitButtonLabel}
       </Button>
     </ButtonGroup>
   );
 
-  return (
-    <Modal
-      body={body}
-      footer={footer}
-      title={t("scm-external-file-plugin.modal.title")}
-      closeFunction={close}
-      active={true}
-      initialFocusRef={initialFocusRef}
-    />
-  );
+  return <Modal body={body} footer={footer} title={title} closeFunction={close} active={true} />;
 };
 
-export default CreateExternalFileModal;
+export default ExternalFileModal;
