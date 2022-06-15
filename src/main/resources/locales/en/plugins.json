@@ -21,7 +21,8 @@
     },
     "edit": {
       "title": "Edit external file link",
-      "submit": "Edit file link"
+      "submit": "Edit file link",
+      "buttonLabel": "Edit"
     }
   },
   "errors": {

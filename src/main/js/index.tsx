@@ -40,7 +40,7 @@ binder.bind<extensionPoints.FileViewActionBarOverflowMenu>(
   "repos.sources.content.actionbar.menu",
   {
     icon: "edit",
-    label: "Edit",
+    label: "scm-external-file-plugin.edit.buttonLabel",
     category: "Editor",
     modalElement: ModifyExternalFileModal
   },
