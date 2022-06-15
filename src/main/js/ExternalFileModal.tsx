@@ -23,7 +23,7 @@
  */
 
 import { File, Repository } from "@scm-manager/ui-types";
-import React, { FC, useCallback, useMemo } from "react";
+import React, { FC, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Button,
@@ -85,6 +85,7 @@ const ExternalFileModal: FC<Props> = ({
   const [commitMessage, filename, url] = useWatch({ control, name: ["commitMessage", "filename", "url"] });
   const isPathAndFilenameDisabled = useMemo(() => isLoading || !!initialUrl, [isLoading, initialUrl]);
   const submitDisabled = useMemo(() => !commitMessage || !filename || !url, [commitMessage, filename, url]);
+  const initialFocusRef = useRef<HTMLInputElement | null>(null);
 
   const submit = useCallback(() => {
     const { commitMessage, path, url, filename } = getValues();
@@ -104,6 +105,12 @@ const ExternalFileModal: FC<Props> = ({
     });
   }, [getValues, submitDisabled, onSubmit]);
 
+  const { ref: pathRef, ...pathRegistration } = register("path", {
+    validate: validation.isPathValid
+  });
+
+  const { ref: urlRef, ...urlRegistration } = register("url", { validate: validation.isUrlValid });
+
   const body = (
     <>
       {error ? <ErrorNotification error={error} /> : null}
@@ -115,9 +122,15 @@ const ExternalFileModal: FC<Props> = ({
         helpText={t("scm-external-file-plugin.create.pathHelpText")}
         onReturnPressed={submit}
         className="mb-4"
-        {...register("path", {
-          validate: validation.isPathValid
-        })}
+        ref={e => {
+          pathRef(e);
+          if (!initialUrl) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            initialFocusRef.current = e;
+          }
+        }}
+        {...pathRegistration}
       />
       <InputField
         label={t("scm-external-file-plugin.create.filename")}
@@ -137,7 +150,15 @@ const ExternalFileModal: FC<Props> = ({
         helpText={t("scm-external-file-plugin.create.urlHelpText")}
         disabled={isLoading}
         onReturnPressed={submit}
-        {...register("url", { validate: validation.isUrlValid })}
+        ref={e => {
+          urlRef(e);
+          if (initialUrl) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            initialFocusRef.current = e;
+          }
+        }}
+        {...urlRegistration}
       />
       <div className="mb-2 mt-5">
         <CommitAuthor />
@@ -163,7 +184,16 @@ const ExternalFileModal: FC<Props> = ({
     </ButtonGroup>
   );
 
-  return <Modal body={body} footer={footer} title={title} closeFunction={close} active={true} />;
+  return (
+    <Modal
+      body={body}
+      footer={footer}
+      title={title}
+      closeFunction={close}
+      active={true}
+      initialFocusRef={initialFocusRef}
+    />
+  );
 };
 
 export default ExternalFileModal;
