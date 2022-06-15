@@ -24,6 +24,8 @@
 
 package com.cloudogu.externalfile;
 
+import com.cloudogu.scm.editor.ChangeGuardCheck;
+import com.cloudogu.scm.editor.ChangeObstacle;
 import com.google.common.base.Strings;
 import sonia.scm.ContextEntry;
 import sonia.scm.repository.Repository;
@@ -37,6 +39,7 @@ import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Locale;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -44,11 +47,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class ExternalFileService {
 
   private final RepositoryServiceFactory serviceFactory;
+
+  private final ChangeGuardCheck changeGuardCheck;
   private static final String FILE_TEMPLATE = "[InternetShortcut]\nURL=%s";
 
   @Inject
-  public ExternalFileService(RepositoryServiceFactory serviceFactory) {
+  public ExternalFileService(RepositoryServiceFactory serviceFactory, ChangeGuardCheck changeGuardCheck) {
     this.serviceFactory = serviceFactory;
+    this.changeGuardCheck = changeGuardCheck;
   }
 
   public void create(Repository repository, CreateExternalFileDto dto) throws IOException {
@@ -68,6 +74,12 @@ public class ExternalFileService {
 
   public void modify(Repository repository, @Nullable String branch, String path, String url, String commitMessage) throws IOException {
     RepositoryPermissions.modify(repository).check();
+
+    Collection<ChangeObstacle> obstacles = changeGuardCheck.isModifiable(repository.getNamespaceAndName(), branch, path);
+    if (!obstacles.isEmpty()) {
+      throw new ChangeNotAllowedException(repository.getNamespaceAndName(), branch, path, obstacles);
+    }
+
     try (RepositoryService service = serviceFactory.create(repository)) {
       ModifyCommandBuilder modifyCommandBuilder = service.getModifyCommand()
         .modifyFile(resolveFilePath(path))

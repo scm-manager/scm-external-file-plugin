@@ -24,6 +24,8 @@
 
 package com.cloudogu.externalfile;
 
+import com.cloudogu.scm.editor.ChangeGuardCheck;
+import com.cloudogu.scm.editor.ChangeObstacle;
 import io.micrometer.core.instrument.util.IOUtils;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.github.sdorra.jse.ShiroExtension;
@@ -45,6 +47,7 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -65,6 +68,9 @@ class ExternalFileServiceTest {
   private ModifyCommandBuilder modifyCommandBuilder;
   @Mock
   private ModifyCommandBuilder.WithOverwriteFlagContentLoader contentLoader;
+
+  @Mock
+  private ChangeGuardCheck changeGuardCheck;
 
   @InjectMocks
   private ExternalFileService service;
@@ -110,6 +116,25 @@ class ExternalFileServiceTest {
     ModifyExternalFileDto dto = new ModifyExternalFileDto("https://test.url/", null, "Modify existing link");
 
     assertThrows(UnauthorizedException.class, () -> service.modify(repository, dto.getBranch(), "my-first-link", dto.getUrl(), dto.getCommitMessage()));
+  }
+
+  @Test
+  @SubjectAware(value = "trillian", permissions = "repository:modify:1")
+  void shouldNotAllowToModifyIfThereIsAChangeObstacle() {
+    when(changeGuardCheck.isModifiable(repository.getNamespaceAndName(), null, "my-first-link")).thenReturn(List.of(new ChangeObstacle() {
+      @Override
+      public String getMessage() {
+        return "NOPE";
+      }
+
+      @Override
+      public String getKey() {
+        return "MyObstacle";
+      }
+    }));
+    ModifyExternalFileDto dto = new ModifyExternalFileDto("https://test.url/", null, "Modify existing link");
+
+    assertThrows(ChangeNotAllowedException.class, () -> service.modify(repository, dto.getBranch(), "my-first-link", dto.getUrl(), dto.getCommitMessage()));
   }
 
   @Test
