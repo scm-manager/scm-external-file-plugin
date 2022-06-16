@@ -80,7 +80,7 @@ const ExternalFileModal: FC<Props> = ({
   const [t] = useTranslation("plugins");
   const { register, formState, control } = useForm<ExternalFileForm>({
     defaultValues: { path: originalPath, filename: initialFilename, commitMessage: "", url: initialUrl },
-    mode: "onBlur"
+    mode: "onChange"
   });
   const [commitMessage, filename, url, path] = useWatch({
     control,
@@ -127,8 +127,6 @@ const ExternalFileModal: FC<Props> = ({
         ref={e => {
           pathRef(e);
           if (!initialUrl) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
             initialFocusRef.current = e;
           }
         }}
@@ -155,8 +153,6 @@ const ExternalFileModal: FC<Props> = ({
         ref={e => {
           urlRef(e);
           if (initialUrl) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
             initialFocusRef.current = e;
           }
         }}

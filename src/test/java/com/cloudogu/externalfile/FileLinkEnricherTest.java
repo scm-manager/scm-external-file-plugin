@@ -36,7 +36,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricherContext;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
-import sonia.scm.repository.*;
+import sonia.scm.repository.BrowserResult;
+import sonia.scm.repository.FileObject;
+import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryTestData;
 
 import javax.inject.Provider;
 import java.net.URI;
@@ -45,7 +49,12 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FileLinkEnricherTest {

@@ -44,7 +44,7 @@ import java.util.Locale;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class ExternalFileService {
+class ExternalFileService {
 
   private final RepositoryServiceFactory serviceFactory;
 
