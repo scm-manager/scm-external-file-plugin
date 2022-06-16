@@ -35,11 +35,11 @@ import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-
 import java.io.IOException;
 
 import static com.cloudogu.externalfile.ExternalFileResource.PATH;
@@ -75,6 +75,15 @@ public class ExternalFileResource {
   public Response createExternalFile(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid CreateExternalFileDto dto) throws IOException {
     Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
     service.create(repository, dto);
+    return Response.noContent().build();
+  }
+
+  @PUT
+  @Consumes(MEDIA_TYPE)
+  @Path("{namespace}/{name}/{path: .*}")
+  public Response modifyExternalFile(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("path") String path, @Valid ModifyExternalFileDto dto) throws IOException {
+    Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
+    service.modify(repository, dto.getBranch(), path, dto.getUrl(), dto.getCommitMessage());
     return Response.noContent().build();
   }
 }

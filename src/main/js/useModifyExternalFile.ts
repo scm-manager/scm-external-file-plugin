@@ -22,12 +22,29 @@
  * SOFTWARE.
  */
 
+import { File, Link } from "@scm-manager/ui-types";
+import { useMutation, useQueryClient } from "react-query";
 import { apiClient } from "@scm-manager/ui-components";
-import { ApiResult } from "@scm-manager/ui-api";
-import { useQuery } from "react-query";
-import { Link, File as FileType } from "@scm-manager/ui-types";
 
-export const useExternalFileUrl = (file: FileType): ApiResult<string> => {
-  const link = (file._links.externalFile as Link).href;
-  return useQuery(["externalFileUrl", link], () => apiClient.get(link).then(r => r.text()));
+export type ModifyExternalFileRequest = {
+  commitMessage: string;
+  url: string;
+  branch: string;
+};
+
+export const useModifyExternalFile = (file: File) => {
+  const queryClient = useQueryClient();
+
+  const link = (file._links.modifyExternalFile as Link).href;
+  const { mutateAsync, isLoading, error } = useMutation<unknown, Error, ModifyExternalFileRequest>(
+    request => apiClient.put(link, request, "application/vnd.scmm-externalFile+json;v=2"),
+    {
+      onSuccess: () => queryClient.invalidateQueries(["externalFileUrl", link])
+    }
+  );
+  return {
+    modify: (request: ModifyExternalFileRequest) => mutateAsync(request),
+    isLoading,
+    error
+  };
 };

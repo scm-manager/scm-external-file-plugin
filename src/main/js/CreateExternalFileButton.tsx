@@ -24,10 +24,11 @@
 
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { File, Repository } from "@scm-manager/ui-types";
 import { Button, Icon } from "@scm-manager/ui-components";
 import styled from "styled-components";
-import CreateExternalFileModal from "./CreateExternalFileModal";
+import ExternalFileModal from "./ExternalFileModal";
+import { extensionPoints } from "@scm-manager/ui-extensions";
+import { useCreateExternalFile } from "./useCreateExternalFile";
 
 const ButtonLink = styled(Button)`
   width: 50px;
@@ -37,16 +38,15 @@ const ButtonLink = styled(Button)`
   }
 `;
 
-type Props = {
-  repository: Repository;
-  sources: File;
-  revision?: string;
-  path?: string;
-};
-
-const CreateExternalFileButton: FC<Props> = ({ repository, revision, sources }) => {
+const CreateExternalFileButton: FC<extensionPoints.ReposSourcesActionbar["props"]> = ({
+  repository,
+  revision,
+  sources
+}) => {
   const [t] = useTranslation("plugins");
   const [showModal, setShowModal] = useState(false);
+  const { create, isLoading, error } = useCreateExternalFile(repository, sources);
+
   return (
     <>
       <ButtonLink
@@ -57,10 +57,15 @@ const CreateExternalFileButton: FC<Props> = ({ repository, revision, sources }) 
         <Icon name="external-link-square-alt" color="inherit" />
       </ButtonLink>
       {showModal ? (
-        <CreateExternalFileModal
+        <ExternalFileModal
+          submitButtonLabel={t("scm-external-file-plugin.modal.submit")}
+          title={t("scm-external-file-plugin.modal.title")}
+          onSubmit={form => create({ ...form, branch: revision || "" })}
           repository={repository}
           revision={revision}
-          sources={sources}
+          initialPath={sources.path}
+          isLoading={isLoading}
+          error={error}
           close={() => setShowModal(false)}
         />
       ) : null}

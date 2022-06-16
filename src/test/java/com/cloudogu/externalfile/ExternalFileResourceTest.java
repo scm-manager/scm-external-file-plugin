@@ -86,4 +86,18 @@ class ExternalFileResourceTest {
 
     verify(service).create(eq(repository), any(CreateExternalFileDto.class));
   }
+
+  @Test
+  @SubjectAware(permissions = "repository:modify:1")
+  void shouldModifyExternalFile() throws URISyntaxException, IOException {
+    MockHttpRequest request =
+      MockHttpRequest
+        .put("/" + ExternalFileResource.PATH + "/" + repository.getNamespaceAndName().toString() + "/my-first-external-file")
+        .contentType(ExternalFileResource.MEDIA_TYPE)
+        .content("{\"url\": \"https://test.url/\", \"commitMessage\": \"Update existing file link\", \"branch\": \"main\"}".getBytes(StandardCharsets.UTF_8));
+
+    dispatcher.invoke(request, response);
+
+    verify(service).modify(repository, "main", "my-first-external-file", "https://test.url/", "Update existing file link");
+  }
 }

@@ -22,12 +22,29 @@
  * SOFTWARE.
  */
 
-import { apiClient } from "@scm-manager/ui-components";
-import { ApiResult } from "@scm-manager/ui-api";
-import { useQuery } from "react-query";
-import { Link, File as FileType } from "@scm-manager/ui-types";
+package com.cloudogu.externalfile;
 
-export const useExternalFileUrl = (file: FileType): ApiResult<string> => {
-  const link = (file._links.externalFile as Link).href;
-  return useQuery(["externalFileUrl", link], () => apiClient.get(link).then(r => r.text()));
-};
+import de.otto.edison.hal.HalRepresentation;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
+public class ModifyExternalFileDto extends HalRepresentation {
+  @NotNull
+  @Size(min = 1)
+  private String url;
+  private String branch;
+  @NotNull
+  @Size(min = 1)
+  private String commitMessage;
+}
