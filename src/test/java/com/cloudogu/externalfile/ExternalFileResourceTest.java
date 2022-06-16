@@ -98,6 +98,6 @@ class ExternalFileResourceTest {
 
     dispatcher.invoke(request, response);
 
-    verify(service).modify(eq(repository), eq("main"), eq("my-first-external-file"), eq("https://test.url/"), eq("Update existing file link"));
+    verify(service).modify(repository, "main", "my-first-external-file", "https://test.url/", "Update existing file link");
   }
 }

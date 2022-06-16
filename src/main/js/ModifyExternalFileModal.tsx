@@ -37,7 +37,7 @@ const ModifyExternalFileModal: extensionPoints.ModalMenuProps["modalElement"] = 
 }) => {
   const [t] = useTranslation("plugins");
   const { data: externalFileUrl, isLoading, error } = useExternalFileUrl(file);
-  const { modify, error: modifyError, isLoading: isModifying } = useModifyExternalFile(repository, file);
+  const { modify, error: modifyError, isLoading: isModifying } = useModifyExternalFile(file);
   return (
     <ExternalFileModal
       submitButtonLabel={t("scm-external-file-plugin.edit.submit")}

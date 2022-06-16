@@ -134,7 +134,10 @@ class ExternalFileServiceTest {
     }));
     ModifyExternalFileDto dto = new ModifyExternalFileDto("https://test.url/", null, "Modify existing link");
 
-    assertThrows(ChangeNotAllowedException.class, () -> service.modify(repository, dto.getBranch(), "my-first-link", dto.getUrl(), dto.getCommitMessage()));
+    String branch = dto.getBranch();
+    String url = dto.getUrl();
+    String commitMessage = dto.getCommitMessage();
+    assertThrows(ChangeNotAllowedException.class, () -> service.modify(repository, branch, "my-first-link", url, commitMessage));
   }
 
   @Test

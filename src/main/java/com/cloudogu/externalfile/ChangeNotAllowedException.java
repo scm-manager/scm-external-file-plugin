@@ -34,14 +34,11 @@ import java.util.stream.Collectors;
 
 class ChangeNotAllowedException extends ExceptionWithContext {
 
-  private final Collection<ChangeObstacle> obstacles;
-
-  public ChangeNotAllowedException(NamespaceAndName namespaceAndName, String branch, String path, Collection<ChangeObstacle> obstacles) {
-    super(createContext(namespaceAndName, branch, path), buildMessage(obstacles));
-    this.obstacles = obstacles;
+  public ChangeNotAllowedException(NamespaceAndName namespaceAndName, String branch, Collection<ChangeObstacle> obstacles) {
+    super(createContext(namespaceAndName, branch), buildMessage(obstacles));
   }
 
-  private static List<ContextEntry> createContext(NamespaceAndName namespaceAndName, String branch, String path) {
+  private static List<ContextEntry> createContext(NamespaceAndName namespaceAndName, String branch) {
     ContextEntry.ContextBuilder contextBuilder = new ContextEntry.ContextBuilder();
     if (branch != null) {
       contextBuilder
@@ -49,10 +46,6 @@ class ChangeNotAllowedException extends ExceptionWithContext {
     }
     return contextBuilder
       .in(namespaceAndName).build();
-  }
-
-  Collection<ChangeObstacle> getObstacles() {
-    return obstacles;
   }
 
   private static String buildMessage(Collection<ChangeObstacle> obstacles) {

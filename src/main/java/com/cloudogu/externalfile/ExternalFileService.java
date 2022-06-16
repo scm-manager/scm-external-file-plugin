@@ -77,7 +77,7 @@ public class ExternalFileService {
 
     Collection<ChangeObstacle> obstacles = changeGuardCheck.isModifiable(repository.getNamespaceAndName(), branch, path);
     if (!obstacles.isEmpty()) {
-      throw new ChangeNotAllowedException(repository.getNamespaceAndName(), branch, path, obstacles);
+      throw new ChangeNotAllowedException(repository.getNamespaceAndName(), branch, obstacles);
     }
 
     try (RepositoryService service = serviceFactory.create(repository)) {

@@ -78,17 +78,19 @@ const ExternalFileModal: FC<Props> = ({
 }) => {
   const originalPath = initialPath === "/" ? "/" : "/" + initialPath;
   const [t] = useTranslation("plugins");
-  const { register, formState, getValues, control } = useForm<ExternalFileForm>({
+  const { register, formState, control } = useForm<ExternalFileForm>({
     defaultValues: { path: originalPath, filename: initialFilename, commitMessage: "", url: initialUrl },
     mode: "onBlur"
   });
-  const [commitMessage, filename, url] = useWatch({ control, name: ["commitMessage", "filename", "url"] });
+  const [commitMessage, filename, url, path] = useWatch({
+    control,
+    name: ["commitMessage", "filename", "url", "path"]
+  });
   const isPathAndFilenameDisabled = useMemo(() => isLoading || !!initialUrl, [isLoading, initialUrl]);
   const submitDisabled = useMemo(() => !commitMessage || !filename || !url, [commitMessage, filename, url]);
   const initialFocusRef = useRef<HTMLInputElement | null>(null);
 
   const submit = useCallback(() => {
-    const { commitMessage, path, url, filename } = getValues();
     if (submitDisabled) {
       return;
     }
@@ -103,7 +105,7 @@ const ExternalFileModal: FC<Props> = ({
       url,
       path: resultingPath
     });
-  }, [getValues, submitDisabled, onSubmit]);
+  }, [submitDisabled, path, filename, onSubmit, commitMessage, url]);
 
   const { ref: pathRef, ...pathRegistration } = register("path", {
     validate: validation.isPathValid

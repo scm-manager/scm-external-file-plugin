@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { File, Link, Repository } from "@scm-manager/ui-types";
+import { File, Link } from "@scm-manager/ui-types";
 import { useMutation, useQueryClient } from "react-query";
 import { apiClient } from "@scm-manager/ui-components";
 
@@ -32,7 +32,7 @@ export type ModifyExternalFileRequest = {
   branch: string;
 };
 
-export const useModifyExternalFile = (repository: Repository, file: File) => {
+export const useModifyExternalFile = (file: File) => {
   const queryClient = useQueryClient();
 
   const link = (file._links.modifyExternalFile as Link).href;
