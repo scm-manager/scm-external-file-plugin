@@ -23,44 +23,48 @@
  */
 package com.cloudogu.externalfile;
 
-import com.cloudogu.scm.editor.ChangeObstacle;
-import sonia.scm.ContextEntry;
-import sonia.scm.ExceptionWithContext;
-import sonia.scm.repository.NamespaceAndName;
 
+import com.cloudogu.scm.editor.ChangeObstacle;
+import org.slf4j.MDC;
+import sonia.scm.ContextEntry;
+import sonia.scm.web.VndMediaType;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class ChangeNotAllowedException extends ExceptionWithContext {
-
-  private final Collection<ChangeObstacle> obstacles;
-
-  public ChangeNotAllowedException(NamespaceAndName namespaceAndName, String branch, Collection<ChangeObstacle> obstacles) {
-    super(createContext(namespaceAndName, branch), buildMessage(obstacles));
-    this.obstacles = obstacles;
-  }
-
-  private static List<ContextEntry> createContext(NamespaceAndName namespaceAndName, String branch) {
-    ContextEntry.ContextBuilder contextBuilder = new ContextEntry.ContextBuilder();
-    if (branch != null) {
-      contextBuilder
-        .in("Branch", branch);
-    }
-    return contextBuilder
-      .in(namespaceAndName).build();
-  }
-
-  Collection<ChangeObstacle> getObstacles() {
-    return obstacles;
-  }
-
-  private static String buildMessage(Collection<ChangeObstacle> obstacles) {
-    return obstacles.stream().map(ChangeObstacle::getMessage).collect(Collectors.joining(",\n", "Change was prevented by other plugins:\n", ""));
-  }
-
+@Provider
+class ChangeNotAllowedExceptionMapper implements ExceptionMapper<ChangeNotAllowedException> {
   @Override
-  public String getCode() {
-    return "AuRneG3vO1";
+  public Response toResponse(ChangeNotAllowedException exception) {
+    return Response.status(403)
+      .entity(new Object() {
+        public String getTransactionId() {
+          return MDC.get("transaction_id");
+        }
+
+        public String getErrorCode() {
+          return exception.getCode();
+        }
+
+        public List<ContextEntry> getContext() {
+          return exception.getContext();
+        }
+
+        public String getMessage() {
+          return exception.getMessage();
+        }
+
+        public Collection<Object> getViolations() {
+          return exception.getObstacles()
+            .stream()
+            .map(ChangeObstacle::getKey)
+            .map(key -> new Object() { public String getKey() { return key; }})
+            .collect(Collectors.toList());
+        }
+      }).type(VndMediaType.ERROR_TYPE).build();
   }
 }
