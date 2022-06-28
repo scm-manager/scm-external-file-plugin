@@ -33,7 +33,7 @@ dependencies {
 }
 
 scmPlugin {
-  scmVersion = "2.35.1-SNAPSHOT"
+  scmVersion = "2.36.0"
   displayName = "External File Link Plugin"
   description = "Shows links to files in SCM-Manager which are stored externally"
   author = "Cloudogu GmbH"
