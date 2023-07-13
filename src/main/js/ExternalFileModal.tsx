@@ -113,6 +113,11 @@ const ExternalFileModal: FC<Props> = ({
 
   const { ref: urlRef, ...urlRegistration } = register("url", { validate: validation.isUrlValid });
 
+  const externalFilenameRegex = /\.url$/i;
+  const isExternalFilenameValid = (filename: string) => {
+    return validation.isFilenameValid(filename) && !externalFilenameRegex.test(filename);
+  };
+
   const body = (
     <>
       {error ? <ErrorNotification error={error} /> : null}
@@ -139,7 +144,7 @@ const ExternalFileModal: FC<Props> = ({
         helpText={t("scm-external-file-plugin.create.filenameHelpText")}
         readOnly={isPathAndFilenameDisabled}
         onReturnPressed={submit}
-        {...register("filename", { validate: validation.isFilenameValid })}
+        {...register("filename", { validate: isExternalFilenameValid })}
       />
       <hr />
       <InputField
@@ -176,7 +181,7 @@ const ExternalFileModal: FC<Props> = ({
       <Button action={close} disabled={isLoading}>
         {t("scm-external-file-plugin.modal.cancel")}
       </Button>
-      <Button action={submit} disabled={submitDisabled} loading={isLoading} color="primary">
+      <Button action={submit} disabled={submitDisabled || !!formState.errors.filename} loading={isLoading} color="primary">
         {submitButtonLabel}
       </Button>
     </ButtonGroup>
