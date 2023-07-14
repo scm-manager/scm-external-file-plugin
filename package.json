@@ -11,7 +11,6 @@
         "postinstall": "plugin-scripts postinstall"
     },
     "devDependencies": {
-        "@scm-manager/ui-plugins": "2.36.0",
         "@scm-manager/plugin-scripts": "^1.2.2",
         "@scm-manager/babel-preset": "^2.13.1",
         "@scm-manager/eslint-config": "^2.15.1",
@@ -46,6 +45,7 @@
         "extends": "@scm-manager/eslint-config"
     },
     "dependencies": {
+        "@scm-manager/ui-plugins": "2.36.0",
         "@scm-manager/ui-components": "^2.36.0",
         "@scm-manager/ui-extensions": "^2.36.0",
         "classnames": "^2.2.6",
