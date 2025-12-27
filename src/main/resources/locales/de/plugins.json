@@ -13,10 +13,10 @@
       "filename": "Dateiname",
       "filenameHelpText": "Dateiname für die Erstellung der Verknüpfung",
       "invalidFilename": "Ungültiger Dateiname",
-      "url": "Url der externen Datei",
+      "url": "URL der externen Datei",
       "urlHelpText": "Zieladresse der externen Datei, z.B. https://github.com/scm-manager/scm-manager/blob/develop/CHANGELOG.md",
-      "invalidUrl": "Ungültige Url",
-      "commitPlaceholder": "Commit Nachricht eingeben...",
+      "invalidUrl": "Ungültige URL",
+      "commitPlaceholder": "Commitnachricht eingeben...",
       "tooltip": "Externe Datei verknüpfen"
     },
     "edit": {
@@ -27,8 +27,8 @@
   },
   "errors": {
     "5KT7aOCOS1": {
-      "displayName": "Ziel Adresse nicht gefunden",
-      "description": "Diese URL Datei enthält keine gültige Ziel-Adresse.\nWeitere Informationen: https://fileinfo.com/extension/url"
+      "displayName": "Zieladresse nicht gefunden",
+      "description": "Diese URL-Datei enthält keine gültige Zieladresse.\nWeitere Informationen: https://fileinfo.com/extension/url"
     }
   }
 }
