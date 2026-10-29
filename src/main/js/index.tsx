@@ -20,12 +20,12 @@ import CreateExternalFileButton from "./CreateExternalFileButton";
 import ModifyExternalFileModal from "./ModifyExternalFileModal";
 
 binder.bind<extensionPoints.RepositorySourcesView>("repos.sources.view", ExternalFileRenderer, {
-  predicate: props => props.file._links.externalFile
+  predicate: (props) => props.file._links.externalFile,
 });
 
 binder.bind<extensionPoints.ReposSourcesActionbar>("repos.sources.actionbar", CreateExternalFileButton, {
-  predicate: props => props.sources && "createExternalFile" in props.sources._links,
-  priority: 100
+  predicate: (props) => props.sources && "createExternalFile" in props.sources._links,
+  priority: 100,
 });
 
 binder.bind<extensionPoints.FileViewActionBarOverflowMenu>(
@@ -34,9 +34,9 @@ binder.bind<extensionPoints.FileViewActionBarOverflowMenu>(
     icon: "edit",
     label: "scm-external-file-plugin.edit.buttonLabel",
     category: "Editor",
-    modalElement: ModifyExternalFileModal
+    modalElement: ModifyExternalFileModal,
   },
   {
-    predicate: props => props.file && "modifyExternalFile" in props.file._links
-  }
+    predicate: (props) => props.file && "modifyExternalFile" in props.file._links,
+  },
 );

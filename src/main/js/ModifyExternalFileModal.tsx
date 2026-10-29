@@ -15,17 +15,17 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { extensionPoints } from "@scm-manager/ui-extensions";
 import { useExternalFileUrl } from "./useExternalFile";
 import ExternalFileModal from "./ExternalFileModal";
 import { useModifyExternalFile } from "./useModifyExternalFile";
-import { useTranslation } from "react-i18next";
 
 const ModifyExternalFileModal: extensionPoints.ModalMenuProps["modalElement"] = ({
   file,
   revision,
   repository,
-  close
+  close,
 }) => {
   const [t] = useTranslation("plugins");
   const { data: externalFileUrl, isLoading, error } = useExternalFileUrl(file);
@@ -42,7 +42,7 @@ const ModifyExternalFileModal: extensionPoints.ModalMenuProps["modalElement"] = 
       initialFilename={file.name}
       error={error || modifyError}
       isLoading={isLoading || isModifying}
-      onSubmit={form =>
+      onSubmit={(form) =>
         modify({ url: form.url, commitMessage: form.commitMessage, branch: revision || "" }).then(close)
       }
     />

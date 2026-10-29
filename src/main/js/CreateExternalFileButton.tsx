@@ -16,15 +16,14 @@
 
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Icon } from "@scm-manager/ui-components";
 import styled from "styled-components";
-import ExternalFileModal from "./ExternalFileModal";
+import { Button, Icon } from "@scm-manager/ui-core";
 import { extensionPoints } from "@scm-manager/ui-extensions";
+import ExternalFileModal from "./ExternalFileModal";
 import { useCreateExternalFile } from "./useCreateExternalFile";
 
 const ButtonLink = styled(Button)`
   width: 50px;
-
   &:hover {
     color: #33b2e8;
   }
@@ -33,7 +32,7 @@ const ButtonLink = styled(Button)`
 const CreateExternalFileButton: FC<extensionPoints.ReposSourcesActionbar["props"]> = ({
   repository,
   revision,
-  sources
+  sources,
 }) => {
   const [t] = useTranslation("plugins");
   const [showModal, setShowModal] = useState(false);
@@ -41,18 +40,14 @@ const CreateExternalFileButton: FC<extensionPoints.ReposSourcesActionbar["props"
 
   return (
     <>
-      <ButtonLink
-        className="button"
-        title={t("scm-external-file-plugin.create.tooltip")}
-        action={() => setShowModal(true)}
-      >
-        <Icon name="external-link-square-alt" color="inherit" />
+      <ButtonLink title={t("scm-external-file-plugin.create.tooltip")} onClick={() => setShowModal(true)}>
+        <Icon>external-link-square-alt</Icon>
       </ButtonLink>
       {showModal ? (
         <ExternalFileModal
           submitButtonLabel={t("scm-external-file-plugin.modal.submit")}
           title={t("scm-external-file-plugin.modal.title")}
-          onSubmit={form => create({ ...form, branch: revision || "" })}
+          onSubmit={(form) => create({ ...form, branch: revision || "" })}
           repository={repository}
           revision={revision}
           initialPath={sources.path}

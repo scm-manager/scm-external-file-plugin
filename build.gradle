@@ -19,14 +19,12 @@ plugins {
 }
 
 dependencies {
-  // define dependencies to other plugins here e.g.:
-  plugin "sonia.scm.plugins:scm-editor-plugin:2.11.0"
-  // optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.0.0"
+  plugin "sonia.scm.plugins:scm-editor-plugin:4.0.0-SNAPSHOT"
 }
 
 scmPlugin {
-  scmVersion = "3.0.0"
-  displayName = "External File Link Plugin"
+  scmVersion = "4.0.0-SNAPSHOT"
+  displayName = "External File"
   description = "Shows links to files in SCM-Manager which are stored externally"
   author = "Cloudogu GmbH"
   category = "Workflow"

@@ -7,7 +7,7 @@
   External File Plugin
 </h1>
 
-Shows files in SCM-Manager which are stored externally
+Shows links to files in SCM-Manager which are stored externally.
 
 ## Usage
 

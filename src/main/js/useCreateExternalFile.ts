@@ -14,10 +14,10 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { File, Link, Repository } from "@scm-manager/ui-types";
-import { useMutation, useQueryClient } from "react-query";
+import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@scm-manager/ui-components";
-import { useHistory } from "react-router-dom";
+import { File, Link, Repository } from "@scm-manager/ui-types";
 
 export type CreateExternalFileRequest = {
   commitMessage: string;
@@ -28,10 +28,10 @@ export type CreateExternalFileRequest = {
 
 export const useCreateExternalFile = (repository: Repository, sources: File) => {
   const queryClient = useQueryClient();
-  const history = useHistory();
+  const navigate = useNavigate();
 
-  const { mutate, isLoading, error } = useMutation<unknown, Error, CreateExternalFileRequest>(
-    request =>
+  const { mutate, isPending, error } = useMutation<unknown, Error, CreateExternalFileRequest>({
+    mutationFn: (request) =>
       apiClient
         .post((sources._links.createExternalFile as Link).href, request, "application/vnd.scmm-externalFile+json;v=2")
         .then(() => {
@@ -42,15 +42,18 @@ export const useCreateExternalFile = (repository: Repository, sources: File) => 
           if (!path.endsWith(".URL")) {
             path += ".URL";
           }
-          history.push(`/repo/${repository.namespace}/${repository.name}/code/sources/${request.branch}/${path}`);
+          navigate(`/repo/${repository.namespace}/${repository.name}/code/sources/${request.branch}/${path}`);
         }),
-    {
-      onSuccess: () => queryClient.invalidateQueries(["repository", repository.namespace, repository.name, "sources"])
-    }
-  );
+    onSuccess: () => {
+      return queryClient.invalidateQueries({
+        queryKey: ["repository", repository.namespace, repository.name, "sources"],
+      });
+    },
+  });
+
   return {
     create: (request: CreateExternalFileRequest) => mutate(request),
-    isLoading,
-    error
+    isLoading: isPending,
+    error,
   };
 };

@@ -14,12 +14,16 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { apiClient } from "@scm-manager/ui-components";
+import { useQuery } from "@tanstack/react-query";
 import { ApiResult } from "@scm-manager/ui-api";
-import { useQuery } from "react-query";
+import { apiClient } from "@scm-manager/ui-components";
 import { Link, File as FileType } from "@scm-manager/ui-types";
 
 export const useExternalFileUrl = (file: FileType): ApiResult<string> => {
   const link = (file._links.externalFile as Link).href;
-  return useQuery(["externalFileUrl", link], () => apiClient.get(link).then(r => r.text()));
+
+  return useQuery({
+    queryKey: ["externalFileUrl", link],
+    queryFn: () => apiClient.get(link).then((r) => r.text()),
+  });
 };

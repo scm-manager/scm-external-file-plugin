@@ -14,9 +14,9 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { File, Link } from "@scm-manager/ui-types";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@scm-manager/ui-components";
+import { File, Link } from "@scm-manager/ui-types";
 
 export type ModifyExternalFileRequest = {
   commitMessage: string;
@@ -26,17 +26,18 @@ export type ModifyExternalFileRequest = {
 
 export const useModifyExternalFile = (file: File) => {
   const queryClient = useQueryClient();
-
   const link = (file._links.modifyExternalFile as Link).href;
-  const { mutateAsync, isLoading, error } = useMutation<unknown, Error, ModifyExternalFileRequest>(
-    request => apiClient.put(link, request, "application/vnd.scmm-externalFile+json;v=2"),
-    {
-      onSuccess: () => queryClient.invalidateQueries(["externalFileUrl", link])
-    }
-  );
+
+  const { mutateAsync, isPending, error } = useMutation<unknown, Error, ModifyExternalFileRequest>({
+    mutationFn: (request) => apiClient.put(link, request, "application/vnd.scmm-externalFile+json;v=2"),
+    onSuccess: () => {
+      return queryClient.invalidateQueries({ queryKey: ["externalFileUrl", link] });
+    },
+  });
+
   return {
     modify: (request: ModifyExternalFileRequest) => mutateAsync(request),
-    isLoading,
-    error
+    isLoading: isPending,
+    error,
   };
 };

@@ -14,20 +14,12 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { File, Repository } from "@scm-manager/ui-types";
 import React, { FC, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Button,
-  ButtonGroup,
-  CommitAuthor,
-  ErrorNotification,
-  InputField,
-  Modal,
-  Textarea,
-  validation
-} from "@scm-manager/ui-components";
 import { useForm, useWatch } from "react-hook-form";
+import { ButtonGroup, CommitAuthor, InputField, Modal, validation } from "@scm-manager/ui-components";
+import { Button, ErrorNotification, Textarea } from "@scm-manager/ui-core";
+import { File, Repository } from "@scm-manager/ui-types";
 
 export type ExternalFileForm = {
   commitMessage: string;
@@ -66,20 +58,23 @@ const ExternalFileModal: FC<Props> = ({
   onSubmit,
   initialPath,
   title,
-  submitButtonLabel
+  submitButtonLabel,
 }) => {
   const originalPath = initialPath === "/" ? "/" : "/" + initialPath;
   const [t] = useTranslation("plugins");
   const { register, formState, control } = useForm<ExternalFileForm>({
     defaultValues: { path: originalPath, filename: initialFilename, commitMessage: "", url: initialUrl },
-    mode: "onChange"
+    mode: "onChange",
   });
   const [commitMessage, filename, url, path] = useWatch({
     control,
-    name: ["commitMessage", "filename", "url", "path"]
+    name: ["commitMessage", "filename", "url", "path"],
   });
   const isPathAndFilenameDisabled = useMemo(() => isLoading || !!initialUrl, [isLoading, initialUrl]);
-  const submitDisabled = useMemo(() => !commitMessage || !filename || !url, [commitMessage, filename, url]);
+  const submitDisabled = useMemo(
+    () => !commitMessage || !filename || !url || !!formState.errors.url || !!formState.errors.path,
+    [commitMessage, filename, url, formState.errors.url, formState.errors.path],
+  );
   const initialFocusRef = useRef<HTMLInputElement | null>(null);
 
   const submit = useCallback(() => {
@@ -95,12 +90,12 @@ const ExternalFileModal: FC<Props> = ({
     onSubmit({
       commitMessage,
       url,
-      path: resultingPath
+      path: resultingPath,
     });
   }, [submitDisabled, path, filename, onSubmit, commitMessage, url]);
 
   const { ref: pathRef, ...pathRegistration } = register("path", {
-    validate: validation.isPathValid
+    validate: validation.isPathValid,
   });
 
   const { ref: urlRef, ...urlRegistration } = register("url", { validate: validation.isUrlValid });
@@ -121,7 +116,7 @@ const ExternalFileModal: FC<Props> = ({
         helpText={t("scm-external-file-plugin.create.pathHelpText")}
         onReturnPressed={submit}
         className="mb-4"
-        ref={e => {
+        ref={(e) => {
           pathRef(e);
           if (!initialUrl) {
             initialFocusRef.current = e;
@@ -147,7 +142,7 @@ const ExternalFileModal: FC<Props> = ({
         helpText={t("scm-external-file-plugin.create.urlHelpText")}
         disabled={isLoading}
         onReturnPressed={submit}
-        ref={e => {
+        ref={(e) => {
           urlRef(e);
           if (initialUrl) {
             initialFocusRef.current = e;
@@ -170,10 +165,15 @@ const ExternalFileModal: FC<Props> = ({
 
   const footer = (
     <ButtonGroup>
-      <Button action={close} disabled={isLoading}>
+      <Button onClick={close} disabled={isLoading}>
         {t("scm-external-file-plugin.modal.cancel")}
       </Button>
-      <Button action={submit} disabled={submitDisabled || !!formState.errors.filename} loading={isLoading} color="primary">
+      <Button
+        onClick={submit}
+        disabled={submitDisabled || !!formState.errors.filename}
+        isLoading={isLoading}
+        variant="primary"
+      >
         {submitButtonLabel}
       </Button>
     </ButtonGroup>
